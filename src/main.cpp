@@ -1,22 +1,13 @@
 #include <HardwareSerial.h>
 
-// CRSF Protocol Constants
-#define RADIO_ADDRESS 0xEA
-#define UART_SYNC 0xC8
 #define LINK_ID 0x14
-#define BATTERY_ID 0x08
 
-HardwareSerial CrsfLink(2); // Use UART2
+HardwareSerial CrsfLink(2);
 uint8_t rxBuffer[128];
 uint8_t rxBufferCount = 0;
 
-// Baud rates to try
-const uint32_t baudRates[] = {420000, 400000, 115200, 460800};
-const bool invertOptions[] = {false, true};
-int currentBaudIndex = 0;
-int currentInvertIndex = 0;
-unsigned long lastSwitchTime = 0;
-unsigned long goodFrameCount = 0;
+const uint32_t baudRate = 420000;
+const bool invertOptions = false;
 
 void readCrsfData();
 void processCrsfFrame();
@@ -25,43 +16,13 @@ void tryNextConfig();
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("CRSF Auto-Detect Started");
-  Serial.println("Testing baud rates and inversion...");
   
   // Start with first config
-  CrsfLink.begin(baudRates[currentBaudIndex], SERIAL_8N1, 16, -1, invertOptions[currentInvertIndex]);
-  Serial.printf("Testing: %lu baud, invert=%d\n", baudRates[currentBaudIndex], invertOptions[currentInvertIndex]);
-  lastSwitchTime = millis();
+  CrsfLink.begin(baudRate, SERIAL_8N1, 16, -1, invertOptions);
 }
 
 void loop() {
   readCrsfData();
-  
-  // If no good frames after 5 seconds, try next config
-  if (goodFrameCount == 0 && (millis() - lastSwitchTime > 5000)) {
-    tryNextConfig();
-  }
-}
-
-void tryNextConfig() {
-  // Move to next configuration
-  currentInvertIndex++;
-  if (currentInvertIndex >= 2) {
-    currentInvertIndex = 0;
-    currentBaudIndex++;
-    if (currentBaudIndex >= 4) {
-      currentBaudIndex = 0;
-    }
-  }
-  
-  CrsfLink.end();
-  delay(100);
-  CrsfLink.begin(baudRates[currentBaudIndex], SERIAL_8N1, 16, -1, invertOptions[currentInvertIndex]);
-  Serial.printf("\nTrying: %lu baud, invert=%d\n", baudRates[currentBaudIndex], invertOptions[currentInvertIndex]);
-  
-  rxBufferCount = 0;
-  lastSwitchTime = millis();
-  goodFrameCount = 0;
 }
 
 void readCrsfData() {
@@ -105,27 +66,8 @@ void readCrsfData() {
 void processCrsfFrame() {
   uint8_t frameType = rxBuffer[2];
   uint8_t length = rxBuffer[1];
-  
-  // Count good frames
-  goodFrameCount++;
-  
-  // Debug counter to show frames are being processed
-  static unsigned long frameCount = 0;
-  static unsigned long lastPrintTime = 0;
-  frameCount++;
-  
-  // Print frame count every 2 seconds
-//   if (millis() - lastPrintTime > 2000) {
-//     Serial.printf("%lu baud, invert=%d - Frames: %lu (last 2s)\n", 
-//                   baudRates[currentBaudIndex], invertOptions[currentInvertIndex], frameCount);
-//     frameCount = 0;
-//     lastPrintTime = millis();
-//   }
 
   switch (frameType) {
-    case 0x16: // RC Channels - most common frame
-      // Just acknowledge we got it, don't spam output
-      break;
       
     case LINK_ID:
       if (length >= 10) {
@@ -140,7 +82,6 @@ void processCrsfFrame() {
         // Reverse scale: dBm = -(255 - RSSI) - offset
         // Typical range: RSSI 50 -> -120dBm, RSSI 220 -> -50dBm
         int rssi1_dbm = -130 + (uplinkRssi1 / 2);
-        // Simple mapping
         int rssi2_dbm = -130 + (uplinkRssi2 / 2);
 
         Serial.printf("[LINK] LQ: %d%%, RSSI: %d/%d (%ddBm/%ddBm), SNR: %ddB, TxPwr: %d\n",
@@ -148,20 +89,8 @@ void processCrsfFrame() {
       }
       break;
 
-    case BATTERY_ID:
-      if (length >= 10) {
-        // Battery voltage is a 16-bit value (little-endian), units: 0.1V
-        uint16_t voltage = (rxBuffer[4] << 8) | rxBuffer[3];
-        // Current is a 16-bit value, units: 0.1A
-        uint16_t current = (rxBuffer[6] << 8) | rxBuffer[5];
-
-        Serial.printf("[BATT] Voltage: %.1fV, Current: %.1fA\n",
-                       voltage / 10.0, current / 10.0);
-      }
-      break;
-
     default:
-      // Silently handle other frame types
+      
       break;
   }
 }
