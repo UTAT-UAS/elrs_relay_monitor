@@ -3,6 +3,7 @@
 
 #include "Arduino.h"
 #include "esp_adc_cal.h"
+#include "driver/adc.h"
 
 class ADCReader {
     private:
@@ -16,7 +17,7 @@ class ADCReader {
     ADCReader(gpio_num_t pin, adc1_channel_t channel, adc_atten_t atten = ADC_ATTEN_DB_11);
 
     void begin();
-    uint32_t readRaw();
+    int readRaw();
     float readVoltage();
     float readAveragedVoltage(int samples = 16);
 
