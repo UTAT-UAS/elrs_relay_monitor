@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "ADCReader.hpp"
 
-ADCReader batteryADC(GPIO_NUM_14, ADC2_CHANNEL_3);
+ADCReader batteryADC(GPIO_NUM_14, ADC2_CHANNEL_6);
 
 constexpr float BATTERY_SCALE_M = 1.0f;
 
