@@ -11,15 +11,17 @@ class ADCReader {
     adc_atten_t _atten;
 
     esp_adc_cal_characteristics_t adc_chars;
-};
 
-public:
+    public:
     ADCReader(gpio_num_t pin, adc1_channel_t channel, adc_atten_t atten = ADC_ATTEN_DB_11);
 
     void begin();
     uint32_t readRaw();
     float readVoltage();
     float readAveragedVoltage(int samples = 16);
+
+};
+
 
 
 
