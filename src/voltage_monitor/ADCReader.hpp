@@ -20,6 +20,7 @@ class ADCReader {
     int readRaw();
     float readVoltage();
     float readAveragedVoltage(int samples = 16);
+    float readBatteryVoltage(float Rtop, float Rbottom);
 
 };
 
