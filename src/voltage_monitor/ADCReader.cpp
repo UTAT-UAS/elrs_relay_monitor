@@ -37,3 +37,8 @@ float ADCReader::readAveragedVoltage(int samples) {
     }
     return (float)sum / samples;
 }
+
+float ADCReader::readBatteryVoltage(float Rtop, float Rbottom) {
+    float Vadc = readAveragedVoltage();   // Already in volts
+    return Vadc * (Rtop + Rbottom) / Rbottom;
+}
