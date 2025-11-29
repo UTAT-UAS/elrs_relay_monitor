@@ -3,10 +3,10 @@
 
 ADCReader batteryADC(GPIO_NUM_14, ADC2_CHANNEL_3);
 
-constexpr float BATTERY_SCALE_M = 1.0f;
+constexpr float BATTERY_SCALE_M = 2.742f;
 
 constexpr float BAT_WARN_THRESHOLD = 7.0f;
-constexpr float BAT_CRIT_THRESHOLD = 6.0f;
+constexpr float BAT_CRIT_THRESHOLD = 6.5f;
 
 enum BatteryState {BAT_OK, BAT_WARN, BAT_CRIT};
 
@@ -18,7 +18,7 @@ void setup() {
     pinMode(21, OUTPUT);
     Serial.begin(115200);
 
-    delay(1000);
+    delay(3000);
 
     Serial.println("Hellow world");
     // CrsfLink.begin(baudRate, SERIAL_8N1, 16, -1, invertOptions);
@@ -26,7 +26,7 @@ void setup() {
 }
 
 float measureBatteryVoltage() {
-  float Vadc = batteryADC.readAveragedVoltage(); 
+  float Vadc = batteryADC.readVoltage(); 
   float Vin = Vadc * BATTERY_SCALE_M;
   Serial.printf("[BAT] Vadc = %.3f V, Vin ≈ %.3f V\n", Vadc, Vin); //For debugging
   return Vin;
@@ -70,10 +70,9 @@ void handleBatteryStatus(float Vin) {
 void loop() {
     // readCrsfData();/
     digitalWrite(21, HIGH);
-    delay(200);
+    delay(1000);
     digitalWrite(21, LOW);
     delay(200);
-    Serial.println("HWLLO");
   
   static unsigned long lastCheck = 0;
   unsigned long now = millis();
