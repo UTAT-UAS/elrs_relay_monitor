@@ -1,7 +1,7 @@
 #include <Arduino.h>
-#include "ADCReader.hpp"
+#include "voltage_monitor/ADCReader.hpp"
 
-ADCReader batteryADC(GPIO_NUM_14, ADC2_CHANNEL_6);
+ADCReader batteryADC(GPIO_NUM_14, ADC2_CHANNEL_3);
 
 constexpr float BATTERY_SCALE_M = 1.0f;
 
@@ -12,9 +12,16 @@ enum BatteryState {BAT_OK, BAT_WARN, BAT_CRIT};
 
 BatteryState lastBatState = BAT_OK;
 
+
+
 void setup() {
+    pinMode(21, OUTPUT);
     Serial.begin(115200);
-    CrsfLink.begin(baudRate, SERIAL_8N1, 16, -1, invertOptions);
+
+    delay(1000);
+
+    Serial.println("Hellow world");
+    // CrsfLink.begin(baudRate, SERIAL_8N1, 16, -1, invertOptions);
     batteryADC.begin();
 }
 
@@ -61,7 +68,12 @@ void handleBatteryStatus(float Vin) {
 }
 
 void loop() {
-    readCrsfData();
+    // readCrsfData();/
+    digitalWrite(21, HIGH);
+    delay(200);
+    digitalWrite(21, LOW);
+    delay(200);
+    Serial.println("HWLLO");
   
   static unsigned long lastCheck = 0;
   unsigned long now = millis();

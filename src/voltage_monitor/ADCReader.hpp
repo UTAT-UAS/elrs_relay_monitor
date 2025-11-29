@@ -8,13 +8,13 @@
 class ADCReader {
     private:
     gpio_num_t _pin;
-    adc1_channel_t _channel;
+    adc2_channel_t _channel;
     adc_atten_t _atten;
 
     esp_adc_cal_characteristics_t adc_chars;
 
     public:
-    ADCReader(gpio_num_t pin, adc1_channel_t channel, adc_atten_t atten = ADC_ATTEN_DB_11);
+    ADCReader(gpio_num_t pin, adc2_channel_t channel, adc_atten_t atten = ADC_ATTEN_DB_12);
 
     void begin();
     int readRaw();
