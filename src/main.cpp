@@ -1,28 +1,24 @@
 #include <Arduino.h>
 #include "voltage_monitor/ADCReader.hpp"
+#include "crsf_interface/crsf_interface.hpp"
 
 ADCReader batteryADC(GPIO_NUM_14, ADC2_CHANNEL_3);
 
 constexpr float BATTERY_SCALE_M = 2.742f;
-
 constexpr float BAT_WARN_THRESHOLD = 7.0f;
 constexpr float BAT_CRIT_THRESHOLD = 6.5f;
-
 enum BatteryState {BAT_OK, BAT_WARN, BAT_CRIT};
-
 BatteryState lastBatState = BAT_OK;
 
-
+CrsfInterface crsfInterface;
 
 void setup() {
     pinMode(21, OUTPUT);
     Serial.begin(115200);
-
+    
     delay(3000);
-
-    Serial.println("Hellow world");
-    // CrsfLink.begin(baudRate, SERIAL_8N1, 16, -1, invertOptions);
     batteryADC.begin();
+    crsfInterface.begin();
 }
 
 float measureBatteryVoltage() {
@@ -68,12 +64,6 @@ void handleBatteryStatus(float Vin) {
 }
 
 void loop() {
-    // readCrsfData();/
-    digitalWrite(21, HIGH);
-    delay(1000);
-    digitalWrite(21, LOW);
-    delay(200);
-  
   static unsigned long lastCheck = 0;
   unsigned long now = millis();
 
@@ -82,4 +72,6 @@ void loop() {
     handleBatteryStatus(Vin);
     lastCheck = now;
   }
+
+  crsfInterface.readCrsfData();
 }
